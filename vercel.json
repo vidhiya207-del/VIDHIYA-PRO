@@ -1,9 +1,9 @@
 {
   "cleanUrls": true,
-  "rewrites": [
+    "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/api/index"
     }
   ]
 }
