@@ -1,1 +1,9 @@
-{ "framework": "tanstack-start" }
+{
+  "framework": "tanstack-start",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
