@@ -1,5 +1,5 @@
 {
-  "framework": "tanstack-start",
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/(.*)",
