@@ -1,0 +1,247 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-glow: var(--glow);
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Light Academic — crisp white paper, indigo accents */
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.99 0.002 265);
+  --foreground: oklch(0.21 0.03 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.03 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.03 265);
+  --primary: oklch(0.52 0.2 277);
+  --primary-foreground: oklch(0.99 0.005 260);
+  --secondary: oklch(0.96 0.01 265);
+  --secondary-foreground: oklch(0.25 0.03 265);
+  --muted: oklch(0.96 0.01 265);
+  --muted-foreground: oklch(0.5 0.02 265);
+  --accent: oklch(0.94 0.03 285);
+  --accent-foreground: oklch(0.28 0.06 285);
+  --destructive: oklch(0.55 0.23 25);
+  --destructive-foreground: oklch(0.99 0.005 260);
+  --border: oklch(0.9 0.012 265);
+  --input: oklch(0.93 0.012 265);
+  --ring: oklch(0.52 0.2 277);
+  --glow: oklch(0.6 0.2 280);
+  --chart-1: oklch(0.52 0.2 277);
+  --chart-2: oklch(0.6 0.15 200);
+  --chart-3: oklch(0.58 0.17 150);
+  --chart-4: oklch(0.68 0.17 60);
+  --chart-5: oklch(0.58 0.22 340);
+  --sidebar: oklch(0.985 0.004 265);
+  --sidebar-foreground: oklch(0.3 0.02 265);
+  --sidebar-primary: oklch(0.52 0.2 277);
+  --sidebar-primary-foreground: oklch(0.99 0.005 260);
+  --sidebar-accent: oklch(0.95 0.015 265);
+  --sidebar-accent-foreground: oklch(0.25 0.03 265);
+  --sidebar-border: oklch(0.91 0.012 265);
+  --sidebar-ring: oklch(0.52 0.2 277);
+  --page-glow-1: oklch(0.7 0.12 275 / 0.18);
+  --page-glow-2: oklch(0.75 0.1 200 / 0.16);
+  --glass-mix: 88%;
+  --glass-inner: oklch(0 0 0 / 0.03);
+  --glass-shadow: 0 18px 50px -34px oklch(0.3 0.05 265 / 0.5);
+}
+
+/* Premium Dark Academic — navy base, indigo accents, glassmorphism */
+.dark {
+  --background: oklch(0.14 0.03 265);
+  --foreground: oklch(0.98 0.005 260);
+  --card: oklch(0.19 0.035 265);
+  --card-foreground: oklch(0.98 0.005 260);
+  --popover: oklch(0.19 0.035 265);
+  --popover-foreground: oklch(0.98 0.005 260);
+  --primary: oklch(0.65 0.19 275);
+  --primary-foreground: oklch(0.98 0.005 260);
+  --secondary: oklch(0.24 0.04 265);
+  --secondary-foreground: oklch(0.98 0.005 260);
+  --muted: oklch(0.22 0.03 265);
+  --muted-foreground: oklch(0.7 0.02 265);
+  --accent: oklch(0.55 0.22 285);
+  --accent-foreground: oklch(0.98 0.005 260);
+  --destructive: oklch(0.62 0.24 25);
+  --destructive-foreground: oklch(0.98 0.005 260);
+  --border: oklch(0.28 0.04 265 / 0.6);
+  --input: oklch(0.24 0.04 265);
+  --ring: oklch(0.65 0.19 275);
+  --glow: oklch(0.7 0.2 280);
+  --sidebar: oklch(0.16 0.03 265);
+  --sidebar-foreground: oklch(0.9 0.01 265);
+  --sidebar-primary: oklch(0.65 0.19 275);
+  --sidebar-primary-foreground: oklch(0.98 0.005 260);
+  --sidebar-accent: oklch(0.22 0.03 265);
+  --sidebar-accent-foreground: oklch(0.98 0.005 260);
+  --sidebar-border: oklch(0.24 0.04 265);
+  --sidebar-ring: oklch(0.65 0.19 275);
+  --page-glow-1: oklch(0.28 0.09 275 / 0.35);
+  --page-glow-2: oklch(0.28 0.09 200 / 0.25);
+  --glass-mix: 65%;
+  --glass-inner: oklch(1 0 0 / 0.06);
+  --glass-shadow: 0 20px 60px -30px oklch(0 0 0 / 0.8);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    background: radial-gradient(1200px 800px at 20% -10%, var(--page-glow-1), transparent 60%),
+      radial-gradient(1000px 600px at 100% 10%, var(--page-glow-2), transparent 60%),
+      var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility glass {
+  background: color-mix(in oklab, var(--color-card) var(--glass-mix), transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--color-border) 100%, transparent);
+  box-shadow:
+    0 1px 0 0 var(--glass-inner) inset,
+    var(--glass-shadow);
+}
+
+@utility gradient-brand {
+  background-image: linear-gradient(135deg, oklch(0.55 0.2 275), oklch(0.52 0.22 315));
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(135deg, var(--color-primary), oklch(0.6 0.2 320));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.dark .text-gradient {
+  background-image: linear-gradient(135deg, oklch(0.85 0.12 275), oklch(0.75 0.18 315));
+}
+
+@utility glow-ring {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-primary) 40%, transparent),
+    0 0 40px -10px var(--color-glow);
+}
+
+/* ---------- Rich note document styling ---------- */
+.note-doc {
+  font-family: var(--font-sans);
+  line-height: 1.75;
+  color: var(--color-foreground);
+  word-break: break-word;
+}
+.note-doc:focus { outline: none; }
+.note-doc h1 { font-size: 1.9rem; font-weight: 700; margin: 1.4rem 0 .8rem; }
+.note-doc h2 { font-size: 1.5rem; font-weight: 700; margin: 1.3rem 0 .6rem; color: var(--color-primary); }
+.note-doc h3 { font-size: 1.2rem; font-weight: 600; margin: 1.1rem 0 .5rem; }
+.note-doc h4 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 .4rem; }
+.note-doc p { margin: .6rem 0; }
+.note-doc ul { list-style: disc; padding-left: 1.4rem; margin: .6rem 0; }
+.note-doc ol { list-style: decimal; padding-left: 1.5rem; margin: .6rem 0; }
+.note-doc li { margin: .25rem 0; }
+.note-doc table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .95rem; }
+.note-doc th, .note-doc td { border: 1px solid var(--color-border); padding: .5rem .7rem; text-align: left; vertical-align: top; }
+.note-doc th { background: color-mix(in oklab, var(--color-primary) 12%, transparent); font-weight: 600; }
+.note-doc pre {
+  background: color-mix(in oklab, var(--color-muted) 90%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: .6rem; padding: .9rem 1rem; overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; margin: .8rem 0;
+}
+.note-doc code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; }
+.note-doc blockquote {
+  border-left: 4px solid var(--color-primary);
+  padding: .4rem 0 .4rem 1rem; margin: .9rem 0;
+  background: color-mix(in oklab, var(--color-primary) 8%, transparent);
+  border-radius: 0 .5rem .5rem 0;
+}
+.note-doc img { max-width: 100%; height: auto; border-radius: .6rem; margin: .8rem 0; }
+.note-doc hr { border: 0; border-top: 1px solid var(--color-border); margin: 1.4rem 0; }
+.note-doc mark { background: color-mix(in oklab, oklch(0.85 0.18 95) 60%, transparent); color: inherit; padding: 0 .15rem; border-radius: .2rem; }
+.note-doc .callout {
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  background: color-mix(in oklab, var(--color-primary) 7%, transparent);
+  border-radius: .6rem; padding: .8rem 1rem; margin: .9rem 0;
+}
+.note-doc figure { margin: 1rem 0; }
+.note-doc figcaption { font-size: .82rem; color: var(--color-muted-foreground); text-align: center; margin-top: .35rem; }
+
+@media print {
+  body { background: white !important; }
+  .no-print { display: none !important; }
+  .print-area { position: static !important; }
+  .note-doc { color: #000 !important; }
+  .note-doc h2 { color: #1f2a63 !important; }
+}
+
+/* ---------------- Presentation slide animations ---------------- */
+@keyframes ppt-fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes ppt-zoom { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes ppt-slide { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: none; } }
+@keyframes ppt-morph { from { opacity: 0; transform: perspective(1200px) rotateY(9deg) scale(.96); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+.ppt-anim-fade  { animation: ppt-fade .55s cubic-bezier(.22,.9,.3,1) both; }
+.ppt-anim-zoom  { animation: ppt-zoom .5s cubic-bezier(.22,.9,.3,1) both; }
+.ppt-anim-slide { animation: ppt-slide .5s cubic-bezier(.22,.9,.3,1) both; }
+.ppt-anim-morph { animation: ppt-morph .65s cubic-bezier(.22,.9,.3,1) both; }
+.ppt-anim-fade li, .ppt-anim-zoom li, .ppt-anim-slide li, .ppt-anim-morph li { animation: ppt-fade .5s both; }
+.ppt-anim-fade li:nth-child(1),.ppt-anim-zoom li:nth-child(1),.ppt-anim-slide li:nth-child(1),.ppt-anim-morph li:nth-child(1){animation-delay:.15s}
+.ppt-anim-fade li:nth-child(2),.ppt-anim-zoom li:nth-child(2),.ppt-anim-slide li:nth-child(2),.ppt-anim-morph li:nth-child(2){animation-delay:.28s}
+.ppt-anim-fade li:nth-child(3),.ppt-anim-zoom li:nth-child(3),.ppt-anim-slide li:nth-child(3),.ppt-anim-morph li:nth-child(3){animation-delay:.41s}
+.ppt-anim-fade li:nth-child(4),.ppt-anim-zoom li:nth-child(4),.ppt-anim-slide li:nth-child(4),.ppt-anim-morph li:nth-child(4){animation-delay:.54s}
+.ppt-anim-fade li:nth-child(5),.ppt-anim-zoom li:nth-child(5),.ppt-anim-slide li:nth-child(5),.ppt-anim-morph li:nth-child(5){animation-delay:.67s}
+.ppt-export-stage { position: fixed; left: -20000px; top: 0; width: 1280px; }

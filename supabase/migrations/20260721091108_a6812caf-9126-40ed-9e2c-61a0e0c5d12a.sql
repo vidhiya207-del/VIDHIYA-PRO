@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS fcm_tokens_user_token_key ON public.fcm_tokens(user_id, token);
