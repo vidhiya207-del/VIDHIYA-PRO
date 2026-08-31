@@ -98,7 +98,7 @@ const SourceSchema = z.object({
 
 export const generateRichNotes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+    .validator((d: unknown) =>
     z
       .object({
         subject: z.string().trim().min(1).max(120),
