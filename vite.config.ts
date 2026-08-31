@@ -9,7 +9,4 @@ export default defineConfig({
     tanstackStart(),
     viteReact(),
   ],
-  build: {
-    cssMinify: "esbuild"
-  }
 });
