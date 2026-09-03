@@ -55,7 +55,7 @@ function logInternal(scope: string, detail: unknown) {
 
 function failureHint(status: number | undefined): string {
   if (status === 400) return "Correct the request fields, schema, or input size before retrying.";
-  if (status === 401 || status === 403) return "Provision a valid AI binding in the server environment.";
+  if (status === 401 || status === 403) return "Provision a valid Cloudflare API token.";
   if (status === 429) return "The provider rate limit was reached; retrying automatically may help.";
   if (status && status >= 500) return "The provider failed temporarily; retry with bounded backoff.";
   return "The server could not complete the AI request.";
@@ -88,30 +88,43 @@ export async function rawAiCall(
   _providerId: AiProviderId = "cloudflare",
 ): Promise<{ ok: true; content: string; ms: number; provider: string; truncated: boolean } | { ok: false; failure: AiFailure; ms: number }> {
   const started = Date.now();
-  const selectedModel = model;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 
-  // Get the AI binding from the global environment
-  const aiBinding = (globalThis as any).AI;
-  if (!aiBinding) {
-    return { ok: false, ms: 0, failure: { kind: "config", provider: "cloudflare", model: selectedModel, message: "AI binding is not configured.", hint: "Add AI binding to wrangler.jsonc" } };
+  if (!token || !accountId) {
+    return { ok: false, ms: 0, failure: { kind: "config", provider: "cloudflare", model, message: "CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID not configured.", hint: "Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to server secrets." } };
   }
 
   const attempts = Math.max(1, Math.min(opts.attempts ?? 3, 3));
   let lastFailure: AiFailure | undefined;
+
   for (let attempt = 0; attempt < attempts; attempt++) {
+    let response: Response | undefined;
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 180_000);
       try {
-        const response = await aiBinding.run(selectedModel, {
-          messages: [{ role: "user", content: promptFromMessages(messages, opts.json) }],
-          max_tokens: opts.maxTokens,
-          ...(opts.json ? { response_format: { type: "json" } } : {}),
+        response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            messages: [{ role: "user", content: promptFromMessages(messages, opts.json) }],
+            max_tokens: opts.maxTokens,
+            ...(opts.json ? { response_format: { type: "json" } } : {}),
+          }),
         });
+      } finally {
         clearTimeout(timeout);
+      }
 
-        const content = typeof response === "string" ? response : (response as any).response ?? "";
-        if (content && content.trim()) {
+      const body = await response.json().catch(() => ({}));
+      if (response.ok) {
+        const content = body.result?.response ?? "";
+        if (content.trim()) {
           return {
             ok: true,
             content,
@@ -120,18 +133,17 @@ export async function rawAiCall(
             truncated: false,
           };
         }
-        lastFailure = { kind: "empty", provider: "cloudflare", model: selectedModel, message: "Model output was empty.", hint: "Retry with a simpler prompt." };
-      } finally {
-        clearTimeout(timeout);
+        lastFailure = { kind: "empty", provider: "cloudflare", model, message: "Model output was empty.", hint: "Retry with a simpler prompt." };
+      } else {
+        lastFailure = { kind: "http", status: response.status, provider: "cloudflare", model, message: body.errors?.[0]?.message || `Cloudflare AI returned HTTP ${response.status}.`, hint: failureHint(response.status) };
       }
     } catch (error) {
-      const status = (error as any)?.status ?? (error as any)?.cause?.status;
-      lastFailure = { kind: "network", status, provider: "cloudflare", model: selectedModel, message: error instanceof Error ? error.message : "Request failed.", hint: failureHint(status) };
+      lastFailure = { kind: "network", provider: "cloudflare", model, message: error instanceof Error ? error.message : "Network request failed.", hint: "Check network connectivity and retry." };
     }
 
     const retryable = lastFailure.kind === "network" || lastFailure.kind === "empty" || lastFailure.status === 429 || Boolean(lastFailure.status && lastFailure.status >= 500);
     if (!retryable || attempt === attempts - 1) break;
-    await sleep(retryDelay(undefined, attempt));
+    await sleep(retryDelay(response, attempt));
   }
 
   return { ok: false, ms: Date.now() - started, failure: lastFailure! };

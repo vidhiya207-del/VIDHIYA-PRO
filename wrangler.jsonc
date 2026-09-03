@@ -3,8 +3,5 @@
   "name": "vidhiya-pro",
   "compatibility_date": "2026-08-31",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
-  "ai": {
-    "binding": "AI"
-  }
+  "main": "@tanstack/react-start/server-entry"
 }
