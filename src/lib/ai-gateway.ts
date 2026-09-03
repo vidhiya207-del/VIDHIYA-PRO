@@ -27,15 +27,16 @@ type Options = {
   maxTokens?: number;
 };
 
-export const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct";
-export const DEFAULT_FALLBACKS: string[] = ["@cf/meta/llama-3.1-8b-instruct-fast"];
+export const DEFAULT_MODEL = "gemini-3.6-flash";
+export const DEFAULT_FALLBACKS: string[] = [];
 
 export const SUPPORTED_MODELS = new Set([
   DEFAULT_MODEL,
   ...DEFAULT_FALLBACKS,
+  "google/gemini-3.6-flash",
 ]);
 
-export type AiProviderId = "cloudflare";
+export type AiProviderId = "google";
 
 export type AiFailure = {
   kind: "config" | "http" | "network" | "empty";
@@ -55,10 +56,19 @@ function logInternal(scope: string, detail: unknown) {
 
 function failureHint(status: number | undefined): string {
   if (status === 400) return "Correct the request fields, schema, or input size before retrying.";
-  if (status === 401 || status === 403) return "Provision a valid Cloudflare API token.";
+  if (status === 401 || status === 403) return "Provision a valid Gemini API key in the server environment.";
   if (status === 429) return "The provider rate limit was reached; retrying automatically may help.";
   if (status && status >= 500) return "The provider failed temporarily; retry with bounded backoff.";
   return "The server could not complete the AI request.";
+}
+
+function geminiKey(): string | undefined {
+  const key = process.env.GEMINI_API_KEY ?? process.env.VITE_GEMINI_API_KEY;
+  return key?.trim() || undefined;
+}
+
+function modelName(model: string): string {
+  return model.replace(/^google\//, "");
 }
 
 function promptFromMessages(messages: AiMessage[], json?: boolean): string {
@@ -85,36 +95,30 @@ export async function rawAiCall(
   messages: AiMessage[],
   model = DEFAULT_MODEL,
   opts: Pick<Options, "json" | "maxTokens" | "attempts"> = {},
-  _providerId: AiProviderId = "cloudflare",
+  _providerId: AiProviderId = "google",
 ): Promise<{ ok: true; content: string; ms: number; provider: string; truncated: boolean } | { ok: false; failure: AiFailure; ms: number }> {
   const started = Date.now();
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-
-  if (!token || !accountId) {
-    return { ok: false, ms: 0, failure: { kind: "config", provider: "cloudflare", model, message: "CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID not configured.", hint: "Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to server secrets." } };
+  const key = geminiKey();
+  const selectedModel = modelName(model);
+  if (!key) {
+    return { ok: false, ms: 0, failure: { kind: "config", provider: "google", model: selectedModel, message: "GEMINI_API_KEY is not configured.", hint: "Add GEMINI_API_KEY to the server environment." } };
   }
 
   const attempts = Math.max(1, Math.min(opts.attempts ?? 3, 3));
   let lastFailure: AiFailure | undefined;
-
   for (let attempt = 0; attempt < attempts; attempt++) {
     let response: Response | undefined;
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 180_000);
       try {
-        response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${encodeURIComponent(key)}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
-            messages: [{ role: "user", content: promptFromMessages(messages, opts.json) }],
-            max_tokens: opts.maxTokens,
-            ...(opts.json ? { response_format: { type: "json" } } : {}),
+            contents: [{ role: "user", parts: [{ text: promptFromMessages(messages, opts.json) }] }],
+            generationConfig: { maxOutputTokens: opts.maxTokens, ...(opts.json ? { responseMimeType: "application/json" } : {}) },
           }),
         });
       } finally {
@@ -123,22 +127,22 @@ export async function rawAiCall(
 
       const body = await response.json().catch(() => ({}));
       if (response.ok) {
-        const content = body.result?.response ?? "";
+        const content = body.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text ?? "").join("") ?? "";
         if (content.trim()) {
           return {
             ok: true,
             content,
             ms: Date.now() - started,
-            provider: "cloudflare",
-            truncated: false,
+            provider: "google",
+            truncated: body.candidates?.[0]?.finishReason === "MAX_TOKENS",
           };
         }
-        lastFailure = { kind: "empty", provider: "cloudflare", model, message: "Model output was empty.", hint: "Retry with a simpler prompt." };
+        lastFailure = { kind: "empty", provider: "google", model: selectedModel, message: "Model output was empty.", hint: "Retry with a simpler prompt." };
       } else {
-        lastFailure = { kind: "http", status: response.status, provider: "cloudflare", model, message: body.errors?.[0]?.message || `Cloudflare AI returned HTTP ${response.status}.`, hint: failureHint(response.status) };
+        lastFailure = { kind: "http", status: response.status, provider: "google", model: selectedModel, message: body.error?.message || `Gemini returned HTTP ${response.status}.`, hint: failureHint(response.status) };
       }
     } catch (error) {
-      lastFailure = { kind: "network", provider: "cloudflare", model, message: error instanceof Error ? error.message : "Network request failed.", hint: "Check network connectivity and retry." };
+      lastFailure = { kind: "network", provider: "google", model: selectedModel, message: error instanceof Error ? error.message : "Network request failed.", hint: "Check network connectivity and retry." };
     }
 
     const retryable = lastFailure.kind === "network" || lastFailure.kind === "empty" || lastFailure.status === 429 || Boolean(lastFailure.status && lastFailure.status >= 500);
@@ -151,6 +155,7 @@ export async function rawAiCall(
 
 export async function callAiGateway(messages: AiMessage[], opts: Options = {}): Promise<string> {
   const requested = [opts.model ?? DEFAULT_MODEL, ...(opts.fallbackModels ?? DEFAULT_FALLBACKS)]
+    .map(modelName)
     .filter((model, index, models) => models.indexOf(model) === index && SUPPORTED_MODELS.has(model));
   const models = requested.length ? requested : [DEFAULT_MODEL, ...DEFAULT_FALLBACKS];
   let lastFailure: AiFailure | undefined;
